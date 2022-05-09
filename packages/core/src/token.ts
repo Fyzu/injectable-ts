@@ -9,11 +9,31 @@ export interface TokenAccessor {
   ): Dependencies[Name]
 }
 
-export function token<Name extends PropertyKey>(name: Name) {
-  return <Type = never>(): Injectable<
+export function token<Name extends PropertyKey>(
+  name: Name
+): <Type = never>() => Type extends undefined
+  ? { error: `${Name extends string ? `'${Name}' token ` : ''}cannot use 'undefined' as type` }
+  : Injectable<
+      {
+        readonly name: Name
+        readonly type: Type
+        readonly optional: false
+        readonly children: readonly [
+          {
+            readonly name: typeof TOKEN_ACCESSOR_KEY
+            readonly type: TokenAccessor
+            readonly optional: true
+            readonly children: readonly []
+          }
+        ]
+      },
+      Type
+    >
+export function token(name: PropertyKey) {
+  return (): Injectable<
     {
-      readonly name: Name
-      readonly type: Type
+      readonly name: PropertyKey
+      readonly type: unknown
       readonly optional: false
       readonly children: readonly [
         {
@@ -24,7 +44,7 @@ export function token<Name extends PropertyKey>(name: Name) {
         }
       ]
     },
-    Type
+    unknown
   > => {
     return (dependencies) => {
       const accessor = dependencies[TOKEN_ACCESSOR_KEY]

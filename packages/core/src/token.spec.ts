@@ -26,4 +26,9 @@ describe('token', () => {
     const result = foo({ [TOKEN_ACCESSOR_KEY]: accessor, foo: 'bar' })
     expect(cb).toHaveBeenCalledWith('bar')
   })
+  it('throw type error on undefined', () => {
+    const foo = token('foo')<undefined>()
+    // $ExpectType { error: "'foo' token cannot use 'undefined' as type"; }
+    type Foo = typeof foo
+  })
 })
